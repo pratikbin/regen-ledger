@@ -64,6 +64,9 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/cosmos/cosmos-sdk/x/group"
+	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
+	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -71,6 +74,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -127,6 +131,7 @@ var (
 			vesting.AppModuleBasic{},
 			feegrantmodule.AppModuleBasic{},
 			authzmodule.AppModuleBasic{},
+			groupmodule.AppModuleBasic{},
 			ecocreditmodule.Module{},
 			data.Module{},
 		}, setCustomModuleBasics()...)...,
@@ -194,6 +199,7 @@ type RegenApp struct {
 	// TransferKeeper   ibctransferkeeper.Keeper
 	FeeGrantKeeper feegrantkeeper.Keeper
 	AuthzKeeper    authzkeeper.Keeper
+	GroupKeeper    groupkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	// ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -239,7 +245,7 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 			minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 			govtypes.StoreKey, paramstypes.StoreKey, upgradetypes.StoreKey,
 			evidencetypes.StoreKey, capabilitytypes.StoreKey, feegrant.StoreKey,
-			authzkeeper.StoreKey,
+			authzkeeper.StoreKey, group.StoreKey,
 			// ibchost.StoreKey, ibctransfertypes.StoreKey,
 		}, setCustomKVStoreKeys()...)...,
 	)
@@ -361,6 +367,13 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 	)
 	app.AuthzKeeper = authzKeeper
 
+	groupConfig := group.DefaultConfig()
+	/*
+		Example of setting group params:
+		groupConfig.MaxMetadataLen = 1000
+	*/
+	app.GroupKeeper = groupkeeper.NewKeeper(keys[group.StoreKey], appCodec, app.MsgServiceRouter(), app.AccountKeeper, groupConfig)
+
 	// register custom modules here
 	app.smm = setCustomModules(app, interfaceRegistry)
 	ecocreditModule := ecocreditmodule.NewModule(
@@ -414,6 +427,7 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 			authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 			// ibc.NewAppModule(app.IBCKeeper),
 			params.NewAppModule(app.ParamsKeeper),
+			groupmodule.NewAppModule(appCodec, app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 			// transferModule,
 		}, app.setCustomModuleManager()...)...,
 	)
@@ -441,6 +455,7 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 			feegrant.ModuleName,
 			paramstypes.ModuleName,
 			vestingtypes.ModuleName,
+			group.ModuleName,
 
 			// ibc modules
 			// ibchost.ModuleName,
@@ -465,6 +480,7 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 			paramstypes.ModuleName,
 			upgradetypes.ModuleName,
 			vestingtypes.ModuleName,
+			group.ModuleName,
 
 			// ibc modules
 			// ibchost.ModuleName,
@@ -494,6 +510,7 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 			vestingtypes.ModuleName,
 			paramstypes.ModuleName,
 			upgradetypes.ModuleName,
+			group.ModuleName,
 
 			// ibc modules
 			// ibctransfertypes.ModuleName,
@@ -512,6 +529,11 @@ func NewRegenApp(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest 
 	// transactions
 	overrideModules := map[string]module.AppModuleSimulation{
 		authtypes.ModuleName: auth.NewAppModule(app.appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
+		ecocredit.ModuleName: ecocreditmodule.NewModule(
+			app.GetSubspace(ecocredit.DefaultParamspace),
+			app.AccountKeeper,
+			app.BankKeeper,
+		),
 	}
 	app.sm = module.NewSimulationManagerFromAppModules(app.mm.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
