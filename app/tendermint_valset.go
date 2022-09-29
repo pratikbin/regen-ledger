@@ -81,7 +81,12 @@ const mainnetValidatorSet = `{
 		{"type":"tendermint/PubKeyEd25519","value":"1mKn3yFKq1OFpK7vNgT5TfL16sAun9E/6KJmIt7qiUI="},
 		{"type":"tendermint/PubKeyEd25519","value":"/HaF0v0BxPf11/syDxNOwsA+qDNiXNz17/gSTQCqosg="},
 		{"type":"tendermint/PubKeyEd25519","value":"88SLxwK1oMmMUdWyGYHjovQWEsrlxAxRjsjzhtRwMHk="},
-		{"type":"tendermint/PubKeyEd25519","value":"6mWcJcqb2h2PT6s6rlqQ+UlEbQ09+eZikwmYxMGKn5E="}
+		{"type":"tendermint/PubKeyEd25519","value":"6mWcJcqb2h2PT6s6rlqQ+UlEbQ09+eZikwmYxMGKn5E="},
+		{"type":"tendermint/PubKeyEd25519","value":"6p/aBaVHQwXdNq5uWnbzuD6VwT7xEac+Cuqtj4NNRUg="},
+		{"type":"tendermint/PubKeyEd25519","value":"wjzZC6eu0gZAmCilv02elkKHPBfjiJFqzEuaP7VI+TI="},
+		{"type":"tendermint/PubKeyEd25519","value":"YcXqTgVTFF4REYQvqNqtWEIYdQu41WO2qYrUOysKheo="},
+		{"type":"tendermint/PubKeyEd25519","value":"zq4uIOsatCoVCl4RjKE1XtDKqZXeR2CP9zWILLh4L0Y="},
+		{"type":"tendermint/PubKeyEd25519","value":"PkTD7ugvS5/m/O9UygeX9yJtRxDGn2hTL/Y46c6m8uc="}
 	]
 }`
 
@@ -118,3 +123,22 @@ func GetMainnetValidatorSetPubkeys() (*PubKeys, error) {
 
 	return pks, nil
 }
+
+// const testnetValidatorSet = `{
+// 	"pub_keys": [
+// 		{"type":"tendermint/PubKeyEd25519","value":"6p/aBaVHQwXdNq5uWnbzuD6VwT7xEac+Cuqtj4NNRUg="},
+// 		{"type":"tendermint/PubKeyEd25519","value":"wjzZC6eu0gZAmCilv02elkKHPBfjiJFqzEuaP7VI+TI="},
+// 		{"type":"tendermint/PubKeyEd25519","value":"YcXqTgVTFF4REYQvqNqtWEIYdQu41WO2qYrUOysKheo="},
+// 		{"type":"tendermint/PubKeyEd25519","value":"zq4uIOsatCoVCl4RjKE1XtDKqZXeR2CP9zWILLh4L0Y="},
+// 		{"type":"tendermint/PubKeyEd25519","value":"PkTD7ugvS5/m/O9UygeX9yJtRxDGn2hTL/Y46c6m8uc="}
+// 	]
+// }`
+
+// func GetTestnetValidatorSetPubkeys() (*PubKeys, error) {
+// 	pks := &PubKeys{}
+// 	if err := tmjson.Unmarshal([]byte(testnetValidatorSet), pks); err != nil {
+// 		return nil, err
+// 	}
+
+// 	return pks, nil
+// }
